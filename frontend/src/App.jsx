@@ -6,6 +6,7 @@ import Officer from "./pages/Officer";
 import Schemes from "./pages/Schemes";
 import Assistant from "./pages/Assistant";
 import AdminDashboard from "./pages/AdminDashboard";
+import Dashboard from "./pages/Dashboard";
 
 function Protected({ roles, children }) {
   const { user, loading } = useAuth();
@@ -33,6 +34,7 @@ function Navbar() {
         <div>
           <Link to="/" style={white}>{user.role === "admin" ? "Dashboard" : "Complaints"}</Link>
           {user.role === "admin" && <Link to="/officer" style={white}>Manage complaints</Link>}
+          {user.role === "citizen" && <Link to="/dashboard" style={white}>My Dashboard</Link>}
           <Link to="/schemes" style={white}>Schemes</Link>
           <Link to="/assistant" style={white}>AI Assistant</Link>
           <span>
@@ -57,6 +59,7 @@ export default function App() {
           <Route path="/schemes" element={<Schemes />} />
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/citizen" element={<Protected roles={["citizen"]}><Citizen /></Protected>} />
+          <Route path="/dashboard" element={<Protected roles={["citizen"]}><Dashboard /></Protected>} />
           <Route path="/officer" element={<Protected roles={["officer", "admin"]}><Officer /></Protected>} />
           <Route path="/admin-dashboard" element={<Protected roles={["admin"]}><AdminDashboard /></Protected>} />
         </Routes>

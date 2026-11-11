@@ -7,6 +7,7 @@ from rest_framework import generics, permissions
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from schemes.models import Notification
 
 from departments.models import Department
 
@@ -104,6 +105,11 @@ class ComplaintStatusView(APIView):
             complaint=complaint, updated_by=request.user,
             old_status=old_status, new_status=new_status,
             comment=data.validated_data.get("comment", ""),
+        )
+        Notification.objects.create(
+            user=complaint.citizen,
+            message=f"Complaint #{complaint.id} is now {new_status.replace('_', ' ')}",
+            link="/citizen",
         )
         return Response(ComplaintSerializer(complaint, context={"request": request}).data)
 

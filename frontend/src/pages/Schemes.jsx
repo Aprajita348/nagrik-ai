@@ -4,7 +4,7 @@ import api from "../api";
 const CATEGORIES = ["student", "farmer", "women", "senior", "health", "business", "housing", "other"];
 const OCCUPATIONS = ["student", "farmer", "business", "salaried", "unemployed", "homemaker", "artisan", "other"];
 
-function SchemeCard({ s }) {
+function SchemeCard({ s, saved, onToggle }) {
   return (
     <div className="card">
       <div className="row between">
@@ -14,13 +14,17 @@ function SchemeCard({ s }) {
       <p>{s.description}</p>
       {s.documents_list.length > 0 && <small>Documents: {s.documents_list.join(", ")}</small>}
       {s.last_date && <small>Last date: {s.last_date}</small>}
-      <a href={s.official_link} target="_blank" rel="noreferrer">Official website</a>
+      <div className="row between">
+        <a href={s.official_link} target="_blank" rel="noreferrer">Official website</a>
+        <button onClick={() => onToggle(s.id)}>{saved ? "Saved (remove)" : "Save"}</button>
+      </div>
     </div>
   );
 }
 
 export default function Schemes() {
   const [schemes, setSchemes] = useState([]);
+  const [saved, setSaved] = useState([]);
   const [q, setQ] = useState("");
   const [category, setCategory] = useState("");
   const [level, setLevel] = useState("");
@@ -29,6 +33,11 @@ export default function Schemes() {
   const [error, setError] = useState("");
   const setP = (k) => (e) => setProfile({ ...profile, [k]: e.target.value });
 
+  const loadSaved = () =>
+    api.get("/schemes/bookmarks/").then((r) => setSaved(r.data.map((x) => x.id))).catch(() => {});
+
+  useEffect(() => { loadSaved(); }, []);
+
   useEffect(() => {
     const params = {};
     if (q) params.q = q;
@@ -36,6 +45,11 @@ export default function Schemes() {
     if (level) params.level = level;
     api.get("/schemes/", { params }).then((r) => setSchemes(r.data));
   }, [q, category, level]);
+
+  const toggle = async (id) => {
+    await api.post(`/schemes/${id}/bookmark/`);
+    loadSaved();
+  };
 
   const check = async (e) => {
     e.preventDefault();
@@ -71,7 +85,9 @@ export default function Schemes() {
         {result && (
           <>
             <p className="notice">{result.count} schemes match. {result.note}</p>
-            {result.schemes.map((s) => <SchemeCard key={s.id} s={s} />)}
+            {result.schemes.map((s) => (
+              <SchemeCard key={s.id} s={s} saved={saved.includes(s.id)} onToggle={toggle} />
+            ))}
           </>
         )}
       </section>
@@ -92,7 +108,9 @@ export default function Schemes() {
         </div>
         <br />
         {schemes.length === 0 && <p>No schemes found.</p>}
-        {schemes.map((s) => <SchemeCard key={s.id} s={s} />)}
+        {schemes.map((s) => (
+          <SchemeCard key={s.id} s={s} saved={saved.includes(s.id)} onToggle={toggle} />
+        ))}
       </section>
     </div>
   );
