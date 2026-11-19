@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api";
+import { useLang } from "../i18n";
 
 const fmt = (d) => new Date(d).toLocaleString();
 const mapsLink = (o) =>
@@ -8,6 +9,7 @@ const mapsLink = (o) =>
     : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${o.name} ${o.address}`)}`;
 
 export default function Dashboard() {
+  const { t } = useLang();
   const [announcements, setAnnouncements] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [saved, setSaved] = useState([]);
@@ -38,10 +40,10 @@ export default function Dashboard() {
       <section>
         <div className="card">
           <div className="row between">
-            <h2>Notifications {unread > 0 && <span className="badge overdue">{unread} new</span>}</h2>
-            {unread > 0 && <button onClick={markRead}>Mark all read</button>}
+            <h2>{t("notifications")} {unread > 0 && <span className="badge overdue">{t("newCount", { n: unread })}</span>}</h2>
+            {unread > 0 && <button onClick={markRead}>{t("markRead")}</button>}
           </div>
-          {notifications.length === 0 && <p>No notifications yet.</p>}
+          {notifications.length === 0 && <p>{t("noNotif")}</p>}
           {notifications.map((n) => (
             <div key={n.id}>
               <b>{n.is_read ? "" : "* "}</b>{n.message}
@@ -51,8 +53,8 @@ export default function Dashboard() {
         </div>
 
         <div className="card">
-          <h2>Announcements</h2>
-          {announcements.length === 0 && <p>No announcements.</p>}
+          <h2>{t("announcements")}</h2>
+          {announcements.length === 0 && <p>{t("noAnn")}</p>}
           {announcements.map((a) => (
             <div key={a.id}>
               <b>{a.title}</b>
@@ -65,26 +67,26 @@ export default function Dashboard() {
 
       <section>
         <div className="card">
-          <h2>My saved schemes</h2>
-          {saved.length === 0 && <p>No saved schemes. Save from the Schemes page.</p>}
+          <h2>{t("savedSchemes")}</h2>
+          {saved.length === 0 && <p>{t("noSaved")}</p>}
           {saved.map((s) => (
             <div key={s.id}>
-              <b>{s.name}</b> ({s.level}){" "}
-              <a href={s.official_link} target="_blank" rel="noreferrer">Official website</a>
-              {s.last_date && <small> | Last date: {s.last_date}</small>}
+              <b>{s.name}</b> ({t("level_" + s.level)}){" "}
+              <a href={s.official_link} target="_blank" rel="noreferrer">{t("official")}</a>
+              {s.last_date && <small> | {t("lastDate")}: {s.last_date}</small>}
             </div>
           ))}
         </div>
 
         <div className="card">
-          <h2>Nearby government offices</h2>
-          <input placeholder="Search by name, area or department" value={q} onChange={(e) => setQ(e.target.value)} />
-          {offices.length === 0 && <p>No offices found.</p>}
+          <h2>{t("nearby")}</h2>
+          <input placeholder={t("searchOffices")} value={q} onChange={(e) => setQ(e.target.value)} />
+          {offices.length === 0 && <p>{t("noOffices")}</p>}
           {offices.map((o) => (
             <div key={o.id}>
               <b>{o.name}</b> {o.department && `(${o.department})`}
               <br />{o.address}{o.phone && ` | ${o.phone}`}
-              <br /><a href={mapsLink(o)} target="_blank" rel="noreferrer">Open in Maps</a>
+              <br /><a href={mapsLink(o)} target="_blank" rel="noreferrer">{t("openMaps")}</a>
             </div>
           ))}
         </div>

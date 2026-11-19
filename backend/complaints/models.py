@@ -22,6 +22,7 @@ class Complaint(models.Model):
         RESOLVED = "resolved", "Resolved"
         CLOSED = "closed", "Closed"
         REJECTED = "rejected", "Rejected"
+        REOPENED = "reopened", "Reopened"
 
     class Priority(models.TextChoices):
         HIGH = "high", "High"
@@ -48,6 +49,9 @@ class Complaint(models.Model):
     due_at = models.DateTimeField(null=True, blank=True)
     acknowledged_at = models.DateTimeField(null=True, blank=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
+    rating = models.PositiveSmallIntegerField(null=True, blank=True)
+    feedback = models.TextField(blank=True)
+    duplicate_of = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL, related_name="duplicates")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

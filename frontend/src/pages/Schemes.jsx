@@ -1,28 +1,31 @@
 import { useEffect, useState } from "react";
 import api from "../api";
+import { useLang } from "../i18n";
 
 const CATEGORIES = ["student", "farmer", "women", "senior", "health", "business", "housing", "other"];
 const OCCUPATIONS = ["student", "farmer", "business", "salaried", "unemployed", "homemaker", "artisan", "other"];
 
 function SchemeCard({ s, saved, onToggle }) {
+  const { t } = useLang();
   return (
     <div className="card">
       <div className="row between">
         <strong>{s.name}</strong>
-        <span className="badge">{s.level} | {s.category}</span>
+        <span className="badge">{t("level_" + s.level)} | {t("cat_" + s.category)}</span>
       </div>
       <p>{s.description}</p>
-      {s.documents_list.length > 0 && <small>Documents: {s.documents_list.join(", ")}</small>}
-      {s.last_date && <small>Last date: {s.last_date}</small>}
+      {s.documents_list.length > 0 && <small>{t("documents")}: {s.documents_list.join(", ")}</small>}
+      {s.last_date && <small>{t("lastDate")}: {s.last_date}</small>}
       <div className="row between">
-        <a href={s.official_link} target="_blank" rel="noreferrer">Official website</a>
-        <button onClick={() => onToggle(s.id)}>{saved ? "Saved (remove)" : "Save"}</button>
+        <a href={s.official_link} target="_blank" rel="noreferrer">{t("official")}</a>
+        <button onClick={() => onToggle(s.id)}>{saved ? t("saved") : t("save")}</button>
       </div>
     </div>
   );
 }
 
 export default function Schemes() {
+  const { t } = useLang();
   const [schemes, setSchemes] = useState([]);
   const [saved, setSaved] = useState([]);
   const [q, setQ] = useState("");
@@ -47,8 +50,12 @@ export default function Schemes() {
   }, [q, category, level]);
 
   const toggle = async (id) => {
-    await api.post(`/schemes/${id}/bookmark/`);
-    loadSaved();
+    try {
+      await api.post(`/schemes/${id}/bookmark/`);
+      await loadSaved();
+    } catch (err) {
+      alert("Save failed: " + (err.response?.status || "") + " " + JSON.stringify(err.response?.data || err.message));
+    }
   };
 
   const check = async (e) => {
@@ -66,25 +73,25 @@ export default function Schemes() {
     <div className="grid">
       <section>
         <form className="card" onSubmit={check}>
-          <h2>Which schemes can I get?</h2>
-          <input type="number" placeholder="Age" value={profile.age} onChange={setP("age")} />
-          <input type="number" placeholder="Annual family income (Rs)" value={profile.annual_income} onChange={setP("annual_income")} />
+          <h2>{t("whichSchemes")}</h2>
+          <input type="number" placeholder={t("agePh")} value={profile.age} onChange={setP("age")} />
+          <input type="number" placeholder={t("incomePh")} value={profile.annual_income} onChange={setP("annual_income")} />
           <select value={profile.occupation} onChange={setP("occupation")}>
-            <option value="">Occupation (any)</option>
-            {OCCUPATIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+            <option value="">{t("occAny")}</option>
+            {OCCUPATIONS.map((o) => <option key={o} value={o}>{t("occ_" + o)}</option>)}
           </select>
           <select value={profile.gender} onChange={setP("gender")}>
-            <option value="">Gender (any)</option>
-            <option value="female">Female</option>
-            <option value="male">Male</option>
+            <option value="">{t("genderAny")}</option>
+            <option value="female">{t("female")}</option>
+            <option value="male">{t("male")}</option>
           </select>
           {error && <p className="error">{error}</p>}
-          <button type="submit" className="primary">Check eligibility</button>
+          <button type="submit" className="primary">{t("checkElig")}</button>
         </form>
 
         {result && (
           <>
-            <p className="notice">{result.count} schemes match. {result.note}</p>
+            <p className="notice">{t("matches", { n: result.count })} {t("guidance")}</p>
             {result.schemes.map((s) => (
               <SchemeCard key={s.id} s={s} saved={saved.includes(s.id)} onToggle={toggle} />
             ))}
@@ -93,21 +100,21 @@ export default function Schemes() {
       </section>
 
       <section>
-        <h2>Browse all schemes</h2>
+        <h2>{t("browse")}</h2>
         <div className="row wrap">
-          <input placeholder="Search schemes" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input placeholder={t("searchPh")} value={q} onChange={(e) => setQ(e.target.value)} />
           <select value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option value="">All categories</option>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            <option value="">{t("allCat")}</option>
+            {CATEGORIES.map((c) => <option key={c} value={c}>{t("cat_" + c)}</option>)}
           </select>
           <select value={level} onChange={(e) => setLevel(e.target.value)}>
-            <option value="">Central + State</option>
-            <option value="central">Central</option>
-            <option value="state">Uttarakhand</option>
+            <option value="">{t("centralState")}</option>
+            <option value="central">{t("level_central")}</option>
+            <option value="state">{t("level_state")}</option>
           </select>
         </div>
         <br />
-        {schemes.length === 0 && <p>No schemes found.</p>}
+        {schemes.length === 0 && <p>{t("noSchemes")}</p>}
         {schemes.map((s) => (
           <SchemeCard key={s.id} s={s} saved={saved.includes(s.id)} onToggle={toggle} />
         ))}

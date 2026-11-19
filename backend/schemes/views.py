@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Announcement, Bookmark, Notification, Office, Scheme
+from .reminders import create_due_reminders
 from .serializers import (
     AnnouncementSerializer, NotificationSerializer, OfficeSerializer, SchemeSerializer,
 )
@@ -91,6 +92,7 @@ class OfficeListView(generics.ListAPIView):
 
 class NotificationListView(APIView):
     def get(self, request):
+        create_due_reminders(request.user)
         items = Notification.objects.filter(user=request.user)[:30]
         return Response(NotificationSerializer(items, many=True).data)
 

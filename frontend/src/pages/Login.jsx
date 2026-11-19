@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { useAuth } from "../AuthContext";
+import { useLang } from "../i18n";
 
 export default function Login() {
   const { login } = useAuth();
+  const { t } = useLang();
   const navigate = useNavigate();
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({ username: "", password: "", first_name: "", email: "", phone: "" });
@@ -20,7 +22,7 @@ export default function Login() {
         await api.post("/auth/register/", form);
       }
       const me = await login(form.username, form.password);
-      navigate(me.role === "citizen" ? "/citizen" : "/officer");
+      navigate(me.role === "citizen" ? "/citizen" : me.role === "admin" ? "/admin-dashboard" : "/officer");
     } catch (err) {
       setError(JSON.stringify(err.response?.data || "Something went wrong"));
     }
@@ -28,20 +30,20 @@ export default function Login() {
 
   return (
     <form className="card narrow" onSubmit={submit}>
-      <h2>{mode === "login" ? "Login" : "Create citizen account"}</h2>
-      <input placeholder="Username" value={form.username} onChange={set("username")} required />
-      <input type="password" placeholder="Password" value={form.password} onChange={set("password")} required />
+      <h2>{mode === "login" ? t("login") : t("createAccount")}</h2>
+      <input placeholder={t("username")} value={form.username} onChange={set("username")} required />
+      <input type="password" placeholder={t("password")} value={form.password} onChange={set("password")} required />
       {mode === "register" && (
         <>
-          <input placeholder="Full name" value={form.first_name} onChange={set("first_name")} />
-          <input type="email" placeholder="Email" value={form.email} onChange={set("email")} />
-          <input placeholder="Phone" value={form.phone} onChange={set("phone")} />
+          <input placeholder={t("fullName")} value={form.first_name} onChange={set("first_name")} />
+          <input type="email" placeholder={t("email")} value={form.email} onChange={set("email")} />
+          <input placeholder={t("phone")} value={form.phone} onChange={set("phone")} />
         </>
       )}
       {error && <p className="error">{error}</p>}
-      <button type="submit" className="primary">{mode === "login" ? "Login" : "Register"}</button>
+      <button type="submit" className="primary">{mode === "login" ? t("login") : t("register")}</button>
       <button type="button" className="link" onClick={() => setMode(mode === "login" ? "register" : "login")}>
-        {mode === "login" ? "New citizen? Register" : "Already have an account? Login"}
+        {mode === "login" ? t("newCitizen") : t("haveAccount")}
       </button>
     </form>
   );

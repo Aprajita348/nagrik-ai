@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import api from "../api";
+import { useLang } from "../i18n";
 
 function SchemeChat() {
-  const [messages, setMessages] = useState([
-    { role: "bot", text: "Namaste! Apni age, income, occupation bataiye, main schemes suggest karunga." },
-  ]);
+  const { t } = useLang();
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const end = useRef(null);
@@ -31,8 +31,9 @@ function SchemeChat() {
 
   return (
     <div className="card">
-      <h2>Scheme Assistant</h2>
+      <h2>{t("schemeAssistant")}</h2>
       <div className="chat">
+        <div className="msg bot">{t("greeting")}</div>
         {messages.map((m, i) => (
           <div key={i} className={`msg ${m.role}`}>
             <div>{m.text}</div>
@@ -48,17 +49,18 @@ function SchemeChat() {
       <form className="row" onSubmit={send}>
         <input
           style={{ flex: 1 }}
-          placeholder="Meri age 42 hai, income 3 lakh, main farmer hoon..."
+          placeholder={t("chatPh")}
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
-        <button type="submit" className="primary" disabled={busy}>Send</button>
+        <button type="submit" className="primary" disabled={busy}>{t("send")}</button>
       </form>
     </div>
   );
 }
 
 function LegalAI() {
+  const { t } = useLang();
   const [description, setDescription] = useState("");
   const [files, setFiles] = useState([]);
   const [result, setResult] = useState(null);
@@ -81,24 +83,24 @@ function LegalAI() {
   return (
     <div>
       <form className="card" onSubmit={submit}>
-        <h2>Legal AI</h2>
+        <h2>{t("legalAI")}</h2>
         <textarea
           rows={5}
-          placeholder="Apni situation explain karein (jaise: mera property dispute 6 saal se chal raha hai)"
+          placeholder={t("legalPh")}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
         <input type="file" accept=".pdf" multiple onChange={(e) => setFiles([...e.target.files])} />
         {error && <p className="error">{error}</p>}
-        <button type="submit" className="primary">Analyze my case</button>
+        <button type="submit" className="primary">{t("analyze")}</button>
       </form>
 
       {result && (
         <div className="card">
           <p className="notice">{result.message}</p>
-          <p><b>Possible case type:</b> {result.possible_case_type}</p>
+          <p><b>{t("possibleType")}:</b> {result.possible_case_type}</p>
           {result.documents_received.length > 0 && (
-            <p><b>Documents received:</b> {result.documents_received.map((d) => d.name).join(", ")}</p>
+            <p><b>{t("docsReceived")}:</b> {result.documents_received.map((d) => d.name).join(", ")}</p>
           )}
           <small>{result.disclaimer}</small>
         </div>
